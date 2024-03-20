@@ -29,20 +29,10 @@ void Draw()
 	{
 		for (int j = 1; j <= L; j++)
 		{
-			cout << board[i][j] << " ";
-		}
-		cout << "\n";
-	}
-	cout << "----------------------\n";
-	for (int i = 1; i <= L; i++)
-	{
-		for (int j = 1; j <= L; j++)
-		{
 			cout << arr[i][j] << " ";
 		}
 		cout << "\n";
 	}
-
 	return;
 }
 
@@ -50,7 +40,8 @@ bool check(int idx, int d)
 {
 	bool ret = true;
 	bool temp = true;
-	s.push(idx);
+	if (s.empty() || s.top() != idx) s.push(idx);
+
 	if (d == 0)
 	{
 		for (int i = 0; i < knights[idx].w; i++)
@@ -209,9 +200,9 @@ int main(void)
 		int a, b;
 		cin >> a >> b;
 
+		
 		bool OK = check(a, b);
 
-		
 		// 된다면 밀고, 데미지 계산
 		if (OK)
 		{
