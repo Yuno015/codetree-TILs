@@ -1,266 +1,125 @@
 #include <iostream>
-#include <stack>
-#include <cstring>
+#include <queue>
 
 using namespace std;
 
 #define MAX_L 44
 #define MAX_N 33
 
-int L, N, Q;
+int l, n, q;
 int board[MAX_L][MAX_L];
-int arr[MAX_L][MAX_L];
-bool moved[MAX_N];
 
-typedef struct _KNIGHT{
-	bool life = true;
-	int hp;
-	int r, c, h, w;
-	int damage = 0;
+typedef struct _KNIGHT
+{
+	int r, c, h, w, k;
+	int nr, nc;
+	int dmg;
+	bool is_moved;
+	int bef_k;
 } KNIGHT;
 
-KNIGHT knights[MAX_N];
-stack<int> s;
+KNIGHT ks[MAX_N];
 
-const int dy[] = { -1, 0, 1, 0 };
-const int dx[] = { 0, 1, 0, -1 };
+const int dy[] = { -1,0,1,0 };
+const int dx[] = { 0,1,0,-1 };
 
-void Draw()
+bool check(int idx, int dir)
 {
-	for (int i = 1; i <= L; i++)
+	for (int i = 1; i <= n; i++)
 	{
-		for (int j = 1; j <= L; j++)
-		{
-			cout << arr[i][j] << " ";
-		}
-		cout << "\n";
+		ks[i].dmg = 0;
+		ks[i].is_moved = false;
+		ks[i].nr = ks[i].r;
+		ks[i].nc = ks[i].c;
 	}
-	return;
+
+	queue<int> q;
+	q.push(idx);
+	ks[idx].is_moved = true;
+
+	while (!q.empty())
+	{
+		int x = q.front(); q.pop();
+
+		ks[x].nr += dy[dir];
+		ks[x].nc += dx[dir];
+
+		if (ks[x].nr < 1 || ks[x].nc < 1 || ks[x].nr + ks[x].h - 1 > l || ks[x].nc + ks[x].w - 1 > l) return false;
+
+		for (int i = ks[x].nr; i < ks[x].nr + ks[x].h; i++)
+		{
+			for (int j = ks[x].nc; j < ks[x].nc + ks[x].w; j++)
+			{
+				if (board[i][j] == 1) ks[x].dmg++;
+				if (board[i][j] == 2) return false;
+			}
+		}
+
+		for (int i = 1; i <= n; i++)
+		{
+			if (ks[i].is_moved || ks[i].k <= 0) continue;
+			if (ks[i].r > ks[x].nr + ks[x].h - 1 || ks[x].nr > ks[i].r + ks[i].h - 1) continue;
+			if (ks[i].c > ks[x].nc + ks[x].w - 1 || ks[x].nc > ks[i].c + ks[i].w - 1) continue;
+
+			ks[i].is_moved = true;
+			q.push(i);
+		}
+	}
+
+	ks[idx].dmg = 0;
+	return true;
 }
 
-bool check(int idx, int d)
+void Move(int idx, int dir)
 {
-	bool ret = true;
-	bool temp = true;
-	if (moved[idx] == false)
-	{
-		s.push(idx); 
-		moved[idx] = true;
-	}
+	if (ks[idx].k <= 0) return;
 
-	if (d == 0)
+	if (check(idx, dir))
 	{
-		for (int i = 0; i < knights[idx].w; i++)
+		for (int i = 1; i <= n; i++)
 		{
-			int ny = knights[idx].r + dy[d];
-			int nx = knights[idx].c + i;
-
-			if (ny < 1 || nx < 1 || ny > L || nx > L || board[ny][nx] == 2)
-			{
-				return false;
-			}
-			else
-			{
-				if (arr[ny][nx] != 0)
-				{
-					temp = check(arr[ny][nx], d);
-				}
-				if (temp == false)
-				{
-					return false;
-				}
-			}
+			ks[i].r = ks[i].nr;
+			ks[i].c = ks[i].nc;
+			ks[i].k -= ks[i].dmg;
 		}
 	}
-	else if (d == 1)
-	{
-		for (int i = 0; i < knights[idx].h; i++)
-		{
-			int ny = knights[idx].r + i;
-			int nx = knights[idx].c + knights[idx].w - 1 + dx[d];
-
-			if (ny < 1 || nx < 1 || ny > L || nx > L || board[ny][nx] == 2)
-			{
-				return false;
-			}
-			else
-			{
-				if (arr[ny][nx] != 0) 
-				{
-					temp = check(arr[ny][nx], d);
-				}
-				if (temp == false)
-				{
-					return false;
-				}
-			}
-		}
-	}
-	else if (d == 2)
-	{
-		for (int i = 0; i < knights[idx].w; i++)
-		{
-			int ny = knights[idx].r + knights[idx].h - 1 + dy[d];
-			int nx = knights[idx].c + i;
-
-			if (ny < 1 || nx < 1 || ny > L || nx > L || board[ny][nx] == 2)
-			{
-				return false;
-			}
-			else
-			{
-				if (arr[ny][nx] != 0) 
-				{
-					temp = check(arr[ny][nx], d);
-				}
-				if (temp == false)
-				{
-					return false;
-				}
-			}
-		}
-	}
-	else if (d == 3)
-	{
-		for (int i = 0; i < knights[idx].h; i++)
-		{
-			int ny = knights[idx].r + i;
-			int nx = knights[idx].c + dx[d];
-
-			if (ny < 1 || nx < 1 || ny > L || nx > L || board[ny][nx] == 2)
-			{
-				return false;
-			}
-			else
-			{
-				if (arr[ny][nx] != 0) 
-				{
-					temp = check(arr[ny][nx], d);
-				}
-				if (temp == false)
-				{
-					return false;
-				}
-			}
-		}
-	}
-	return ret;
-}
-
-void Move(int idx, int d)
-{
-	for (int y = knights[idx].r; y < knights[idx].r + knights[idx].h; y++)
-	{
-		for (int x = knights[idx].c; x < knights[idx].c + knights[idx].w; x++)
-		{
-			arr[y][x] = 0;
-		}
-	}
-
-	knights[idx].r += dy[d];
-	knights[idx].c += dx[d];
-
-	for (int y = knights[idx].r; y < knights[idx].r + knights[idx].h; y++)
-	{
-		for (int x = knights[idx].c; x < knights[idx].c + knights[idx].w; x++)
-		{
-			arr[y][x] = idx;
-		}
-	}
-
 	return;
 }
 
 int main(void)
 {
-	cin >> L >> N >> Q;
-	
-	// board 받기
-	for (int i = 1; i <= L; i++)
+	cin >> l >> n >> q;
+
+	for (int i = 1; i <= l; i++)
 	{
-		for (int j = 1; j <= L; j++)
+		for (int j = 1; j <= l; j++)
 		{
 			cin >> board[i][j];
 		}
 	}
 
-	// 기사 정보 입력받기
-	for (int i = 1; i <= N; i++)
+	for (int i = 1; i <= n; i++)
 	{
-		cin >> knights[i].r >> knights[i].c >> knights[i].h >> knights[i].w >> knights[i].hp;
-		knights[i].life = true;
-
-		for (int y = knights[i].r; y < knights[i].r + knights[i].h; y++)
-		{
-			for (int x = knights[i].c; x < knights[i].c + knights[i].w; x++)
-			{
-				arr[y][x] = i;
-			}
-		}
-	}
-	//Draw();
-	// 명령 수행
-	while(Q--)
-	{
-		//cout << "------------ " << Q << " -----------------\n";
-		memset(moved, 0, sizeof(moved));
-		// 명령한 대로 움직일 수 있는가? 확인하기
-		int a, b;
-		cin >> a >> b;
-		if (knights[a].life == false) continue;
-		
-		bool OK = check(a, b);
-
-		// 된다면 밀고, 데미지 계산
-		if (OK)
-		{
-			while (!s.empty())
-			{
-				Move(s.top(), b);
-				if (s.top() != a)
-				{
-					for (int y = knights[s.top()].r; y < knights[s.top()].r + knights[s.top()].h; y++)
-					{
-						for (int x = knights[s.top()].c; x < knights[s.top()].c + knights[s.top()].w; x++)
-						{
-							if (board[y][x] == 1)
-							{
-								knights[s.top()].damage++;
-							}
-						}
-					}
-				}
-				s.pop();
-			}
-		}
-
-
-		// 전사자 처리
-		for (int i = 1; i <= N; i++)
-		{
-			if (knights[i].hp <= knights[i].damage) knights[i].life = false;
-			if (knights[i].life == false)
-			{
-				for (int y = knights[i].r; y < knights[i].r + knights[i].h; y++)
-				{
-					for (int x = knights[i].c; x < knights[i].c + knights[i].w; x++)
-					{
-						arr[y][x] = 0;
-					}
-				}
-			}
-		}
-		//Draw();
-		stack<int> temp;
-		swap(temp, s);
+		cin >> ks[i].r >> ks[i].c >> ks[i].h >> ks[i].w >> ks[i].k;
+		ks[i].bef_k = ks[i].k;
 	}
 
-	int total = 0;
-	for (int i = 1; i <= N; i++)
+	while (q--)
 	{
-		if (knights[i].life == true) total += knights[i].damage;
+		int idx, idr;
+		cin >> idx >> idr;
+		Move(idx, idr);
 	}
 
-	cout << total << "\n";
+	long long ans = 0;
+	for (int i = 1; i <= n; i++)
+	{
+		if (ks[i].k > 0)
+		{
+			ans += ks[i].bef_k - ks[i].k;
+		}
+	}
+
+	cout << ans;
 	return 0;
 }
