@@ -198,14 +198,16 @@ int main(void)
 			}
 		}
 	}
+	//Draw();
 	// 명령 수행
 	while(Q--)
 	{
+		//cout << "------------ " << Q << " -----------------\n";
 		memset(moved, 0, sizeof(moved));
 		// 명령한 대로 움직일 수 있는가? 확인하기
 		int a, b;
 		cin >> a >> b;
-
+		if (knights[a].life == false) continue;
 		
 		bool OK = check(a, b);
 
@@ -248,6 +250,7 @@ int main(void)
 				}
 			}
 		}
+		//Draw();
 		stack<int> temp;
 		swap(temp, s);
 	}
