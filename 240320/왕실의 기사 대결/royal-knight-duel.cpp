@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stack>
+#include <cstring>
 
 using namespace std;
 
@@ -9,6 +10,7 @@ using namespace std;
 int L, N, Q;
 int board[MAX_L][MAX_L];
 int arr[MAX_L][MAX_L];
+bool moved[MAX_N];
 
 typedef struct _KNIGHT{
 	bool life = true;
@@ -40,7 +42,11 @@ bool check(int idx, int d)
 {
 	bool ret = true;
 	bool temp = true;
-	if (s.empty() || s.top() != idx) s.push(idx);
+	if (moved[idx] == false)
+	{
+		s.push(idx); 
+		moved[idx] = true;
+	}
 
 	if (d == 0)
 	{
@@ -192,10 +198,10 @@ int main(void)
 			}
 		}
 	}
-
 	// 명령 수행
 	while(Q--)
 	{
+		memset(moved, 0, sizeof(moved));
 		// 명령한 대로 움직일 수 있는가? 확인하기
 		int a, b;
 		cin >> a >> b;
@@ -242,7 +248,6 @@ int main(void)
 				}
 			}
 		}
-
 		stack<int> temp;
 		swap(temp, s);
 	}
