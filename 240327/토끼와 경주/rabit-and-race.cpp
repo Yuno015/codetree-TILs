@@ -4,6 +4,7 @@ using namespace std;
 
 int q, n, m, p, k, s, l;
 int command;
+long long total_sum;
 
 typedef struct _Rabbit {
 	int r = 1 , c = 1;
@@ -11,6 +12,27 @@ typedef struct _Rabbit {
 	int go = 0;
 	int pid;
 	int d;
+
+	bool operator <(const _Rabbit& b) const
+	{
+		if (go == b.go)
+		{
+			if ((r + c) == (b.r + b.c))
+			{
+				if (r == b.r)
+				{
+					if (c == b.c)
+					{
+						return pid > b.pid;
+					}
+					return c > b.c;
+				}
+				return r > b.r;
+			}
+			return (r + c) > (b.r + b.c);
+		}
+		return go > b.go;
+	}
 } Rabbit;
 
 Rabbit rs[2002];
@@ -191,11 +213,8 @@ int main(void)
 				int ts = R_Move(target);
 
 				// 점수 더해주기
-				for (int i = 1; i <= p; i++)
-				{
-					if (rs[i].pid == target) continue;
-					rs[i].score += ts;
-				}
+				total_sum += ts;
+				rs[pIDs[target]].score -= ts;
 			}
 			// 마지막 우선순위 토끼에게 +s점
 			int LR = LastRabbit();
@@ -212,7 +231,7 @@ int main(void)
 			long long mx = -1;
 			for (int i = 1; i <= p; i++)
 			{
-				if (mx < rs[i].score) mx = rs[i].score;
+				if (mx < rs[i].score + total_sum) mx = rs[i].score + total_sum;
 			}
 			cout << mx << "\n";
 		}
