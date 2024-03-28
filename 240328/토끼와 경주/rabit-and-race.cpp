@@ -70,6 +70,127 @@ void Init()
 	}
 }
 
+Rabbit getUP(Rabbit cur, int dist)
+{
+	Rabbit up = cur;
+	dist %= 2 * (n - 1);
+
+	if (dist >= up.r - 1)
+	{
+		dist -= (up.r - 1);
+		up.r = 1;
+	}
+	else
+	{
+		up.r -= dist;
+		dist = 0;
+	}
+
+	if (dist >= n - up.r)
+	{
+		dist -= (n - up.r);
+		up.r = n;
+	}
+	else
+	{
+		up.r += dist;
+		dist = 0;
+	}
+	up.r -= dist;
+
+	return up;
+}
+
+Rabbit getDown(Rabbit cur, int dist)
+{
+	Rabbit down = cur;
+	dist %= 2 * (n - 1);
+
+	if (dist >= n - down.r)
+	{
+		dist -= (n - down.r);
+		down.r = n;
+	}
+	else
+	{
+		down.r += dist;
+		dist = 0;
+	}
+	if (dist >= down.r - 1)
+	{
+		dist -= (down.r - 1);
+		down.r = 1;
+	}
+	else
+	{
+		down.r -= dist;
+		dist = 0;
+	}
+	down.r += dist;
+
+	return down;
+}
+
+Rabbit getRight(Rabbit cur, int dist)
+{
+	Rabbit right = cur;
+	dist %= 2 * (m - 1);
+
+	if (dist >= m - right.c)
+	{
+		dist -= (m - right.c);
+		right.c = m;
+	}
+	else
+	{
+		right.c += dist;
+		dist = 0;
+	}
+	if (dist >= right.c - 1)
+	{
+		dist -= (right.c - 1);
+		right.c = 1;
+	}
+	else
+	{
+		right.c -= dist;
+		dist = 0;
+	}
+	right.c += dist;
+
+	return right;
+}
+
+Rabbit getLeft(Rabbit cur, int dist)
+{
+	Rabbit left = cur;
+	dist %= 2 * (m - 1);
+
+	if (dist >= left.c - 1)
+	{
+		dist -= (left.c - 1);
+		left.c = 1;
+	}
+	else
+	{
+		left.c -= dist;
+		dist = 0;
+	}
+	if (dist >= m - left.c)
+	{
+		dist -= (m - left.c);
+		left.c = m;
+	}
+	else
+	{
+		left.c += dist;
+		dist = 0;
+	}
+	left.c -= dist;
+
+	return left;
+}
+
 void Race()
 {
 	cin >> k >> s;
@@ -84,88 +205,34 @@ void Race()
 	while (k--)
 	{
 		Rabbit target = pq.top(); pq.pop();
-
-		int mx = -1, rr, cc;
-		for (int i = 0; i < 4; i++)
-		{
-			int ny = target.d * dy[i] % (2 * (n - 1));
-			int nx = target.d * dx[i] % (2 * (m - 1));
-			int tr, tc;
-
-			if (ny == 0)
-			{
-				if (target.c + nx >= 1 && target.c + nx <= m)
-				{
-					tc = target.c + nx;
-				}
-				else
-				{
-					int diff = target.c - 1;
-					int next;
-					if (target.c + nx < 1)
-					{
-						next = (abs(nx) - diff) % (2 * (m - 1));
-					}
-					else if (target.c + nx > m)
-					{
-						next = (nx + diff) % (2 * (m - 1));
-					}
-
-					if (next <= (m - 1))
-					{
-						tc = next + 1;
-					}
-					else
-					{
-						tc = 2 * (m - 1) - next + 1;
-					}
-				}
-				tr = target.r;
-			}
-			else if (nx == 0)
-			{
-				if (target.r + ny >= 1 && target.r + ny <= n)
-				{
-					tr = target.r + ny;
-				}
-				else
-				{
-					int diff = target.r - 1;
-					int next;
-					if (target.r + ny < 1)
-					{
-						next = (abs(ny) - diff) % (2 * (n - 1));
-					}
-					else if (target.r + ny > n)
-					{
-						next = (ny + diff) % (2 * (n - 1));
-					}
-
-					if (next <= (n - 1))
-					{
-						tr = next + 1;
-					}
-					else
-					{
-						tr = 2 * (n - 1) - next + 1;
-					}
-				}
-				tc = target.c;
-			}
-			if (mx < tr + tc)
-			{
-				mx = tr + tc; rr = tr; cc = tc;
-			}
-		}
-		target.r = rr; target.c = cc; target.jump++;
-		pq.push(target);
-		rs[idx[target.pid]].r = rr;
-		rs[idx[target.pid]].c = cc;
-		rs[idx[target.pid]].jump++;
-		isMoved[idx[target.pid]] = true;
-		rs[idx[target.pid]].score -= mx;
+		int dist = target.d;
 		
-		total_sum += mx;
+		Rabbit nextR = target;
+		nextR.r = 1; nextR.c = 1;
+		
+		Rabbit up = getUP(target, dist);
+		if (cmp(nextR, up)) nextR = up;
+
+		Rabbit down = getDown(target, dist);
+		if (cmp(nextR, down)) nextR = down;
+
+		Rabbit right = getRight(target, dist);
+		if (cmp(nextR, right)) nextR = right;
+
+		Rabbit left = getLeft(target, dist);
+		if (cmp(nextR, left)) nextR = left;
+
+		nextR.jump++;
+		pq.push(nextR);
+
+		int nidx = idx[nextR.pid];
+		rs[nidx].r = nextR.r;
+		rs[nidx].c = nextR.c;
+		rs[nidx].jump++;
+		rs[nidx].score -= (nextR.r + nextR.c);
+		isMoved[nidx] = true;
+
+		total_sum += (nextR.r + nextR.c);
 	}
 
 	Rabbit bonus_r;
